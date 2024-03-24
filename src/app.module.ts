@@ -5,6 +5,7 @@ import { ActualitesModule } from './actualites/actualites.module';
 import { HelperModule } from './helper/helper.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ActualiteCategoryModule } from './actualite-category/actualite-category.module';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       synchronize: true,
     }),
     ActualitesModule, 
-    HelperModule],
+    HelperModule, ActualiteCategoryModule],
   controllers: [AppController],
   providers: [AppService],
 })
