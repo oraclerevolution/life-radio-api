@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Patch, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Patch, Post, Query } from '@nestjs/common';
 import { ActualitesService } from './actualites.service';
 import { Actualites } from './entities/actualites.entity';
 import { GetActualitesDto } from './dto/get-actualites.dto';
@@ -9,6 +9,7 @@ import { UpdateActualityDto } from './dto/update-actuality.dto';
 import { DeleteResult, UpdateResult } from 'typeorm';
 import { DeleteActualityResponseDto } from './dto/delete-actuality-response.dto';
 import { UpdateActualityResponseDto } from './dto/update-actuality-response.dto';
+import { ActualiteCategoryService } from 'src/actualite-category/actualite-category.service';
 
 @Controller('actualites')
 @ApiHeader({
@@ -19,7 +20,8 @@ import { UpdateActualityResponseDto } from './dto/update-actuality-response.dto'
 @ApiTags('APIs Actualités')
 export class ActualitesController {
     constructor(
-        private readonly actualitesService: ActualitesService
+        private readonly actualitesService: ActualitesService,
+        private readonly actualitesCategoryService: ActualiteCategoryService
     ) { }
 
     @Get('')
@@ -42,6 +44,11 @@ export class ActualitesController {
     async create(
         @Body() payload: CreateActualitesDto
     ): Promise<Actualites> {
+        const {categoryId} = payload
+        const checkIfCategoryExist = await this.actualitesCategoryService.getOne(categoryId);
+        if (!checkIfCategoryExist) {
+            throw new BadRequestException("La categorie n'existe pas");
+        }
         return this.actualitesService.create(payload);
     }
 
