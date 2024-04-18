@@ -6,31 +6,35 @@ import { CreateActualitesDto } from './dto/create-actualites.dto';
 
 @Injectable()
 export class ActualitesService {
-    constructor(
-        @InjectRepository(Actualites) private readonly repository: Repository<Actualites>,
-    ) {}
+  constructor(
+    @InjectRepository(Actualites)
+    private readonly repository: Repository<Actualites>,
+  ) {}
 
-    async findAll(): Promise<Actualites[]> {
-        return this.repository.find();
-    }
+  async findAll(): Promise<Actualites[]> {
+    return this.repository.find();
+  }
 
-    async create(payload: CreateActualitesDto): Promise<Actualites> {
-        return this.repository.save(payload);
-    }
+  async create(payload: CreateActualitesDto): Promise<Actualites> {
+    return this.repository.save(payload);
+  }
 
-    async getOne(id: string): Promise<Actualites> {
-        return this.repository.findOne({
-            where:{
-                id
-            }
-        });
-    }
+  async getOne(id: string): Promise<Actualites> {
+    return this.repository.findOne({
+      where: {
+        id,
+      },
+    });
+  }
 
-    async updateActuality(id: string, payload: CreateActualitesDto): Promise<Actualites> {
-        return this.repository.save({id, ...payload});
-    }
+  async updateActuality(
+    id: string,
+    payload: CreateActualitesDto,
+  ): Promise<Actualites> {
+    return this.repository.save({ id, ...payload });
+  }
 
-    async deleteActuality(id: string): Promise<DeleteResult> {
-        return await this.repository.delete({id});
-    }
+  async deleteActuality(id: string): Promise<DeleteResult> {
+    return await this.repository.delete({ id });
+  }
 }

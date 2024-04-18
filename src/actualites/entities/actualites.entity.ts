@@ -1,24 +1,33 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity({
-    name: 'actualites'
+  name: 'actualites',
 })
 export class Actualites {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-    @Column()
-    titre: string;
+  @Column()
+  titre: string;
 
-    @Column()
-    contenu: string;
+  @Column()
+  contenu: string;
 
-    @Column()
-    categoryId: string
+  @Column()
+  image: string;
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @Column()
+  categoryId: string;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
