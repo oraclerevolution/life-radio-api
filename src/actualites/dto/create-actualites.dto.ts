@@ -1,14 +1,15 @@
-import { ApiOperation, ApiProperty } from "@nestjs/swagger";
-import { Actualites } from "../entities/actualites.entity";
-import { IsString } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateActualitesDto {
-    @ApiProperty()
-    titre: string;
+  @ApiProperty()
+  titre: string;
 
-    @ApiProperty()
-    contenu: string;
+  @ApiProperty()
+  contenu: string;
 
-    @ApiProperty()
-    categoryId: string
+  @ApiProperty()
+  categoryId: string;
+
+  @ApiProperty()
+  image: string;
 }

@@ -15,7 +15,12 @@ export class ActualitesService {
     return this.repository.find();
   }
 
-  async create(payload: CreateActualitesDto): Promise<Actualites> {
+  async create(
+    payload: CreateActualitesDto,
+    file: Express.Multer.File,
+  ): Promise<Actualites> {
+    const newFilename = `${file.originalname.trim()}`;
+    payload.image = newFilename;
     return this.repository.save(payload);
   }
 

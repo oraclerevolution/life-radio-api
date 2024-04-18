@@ -19,7 +19,7 @@ export class Actualites {
   @Column()
   contenu: string;
 
-  @Column()
+  @Column({ nullable: true })
   image: string;
 
   @Column()

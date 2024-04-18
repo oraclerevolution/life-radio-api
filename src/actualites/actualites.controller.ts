@@ -7,6 +7,8 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ActualitesService } from './actualites.service';
 import { Actualites } from './entities/actualites.entity';
@@ -24,6 +26,9 @@ import { UpdateActualityDto } from './dto/update-actuality.dto';
 import { DeleteActualityResponseDto } from './dto/delete-actuality-response.dto';
 import { UpdateActualityResponseDto } from './dto/update-actuality-response.dto';
 import { ActualiteCategoryService } from 'src/actualite-category/actualite-category.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express';
+import { diskStorage } from 'multer';
 
 @Controller('actualites')
 @ApiHeader({
@@ -49,20 +54,34 @@ export class ActualitesController {
   }
 
   @Post('create')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/actualites',
+        filename: (req, file, cb) => {
+          const newFilename = `${file.originalname.trim()}`;
+          cb(null, newFilename);
+        },
+      }),
+    }),
+  )
   @ApiOperation({ summary: 'Create an actuality' })
   @ApiBody({ type: CreateActualitesDto })
   @ApiOkResponse({
     description: 'The actuality has been successfully created.',
     type: CreateActualityResponseDto,
   })
-  async create(@Body() payload: CreateActualitesDto): Promise<Actualites> {
+  async create(
+    @Body() payload: CreateActualitesDto,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<Actualites> {
     const { categoryId } = payload;
     const checkIfCategoryExist =
       await this.actualitesCategoryService.getOne(categoryId);
     if (!checkIfCategoryExist) {
       throw new BadRequestException("La categorie n'existe pas");
     }
-    return this.actualitesService.create(payload);
+    return this.actualitesService.create(payload, file);
   }
 
   @Get(':id')
@@ -77,7 +96,7 @@ export class ActualitesController {
 
   @Patch('update/:id')
   @ApiOperation({ summary: 'Update an actuality' })
-  @ApiBody({ type: CreateActualitesDto })
+  @ApiBody({ type: UpdateActualityDto })
   @ApiOkResponse({
     description: 'The actuality has been successfully updated.',
     type: UpdateActualityResponseDto,
