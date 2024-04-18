@@ -14,5 +14,6 @@ import { MulterModule } from '@nestjs/platform-express';
   ],
   controllers: [PodcastsPlaylistController],
   providers: [PodcastsPlaylistService],
+  exports: [PodcastsPlaylistService],
 })
 export class PodcastsPlaylistModule {}

@@ -88,4 +88,8 @@ export class PodcastsPlaylistController {
   async delete(@Param('id') id: string): Promise<DeleteResult> {
     return await this.podcastService.delete(id);
   }
+
+  async getPlaylistById(id: string): Promise<PodcastsPlaylist> {
+    return this.podcastService.getOne(id);
+  }
 }
