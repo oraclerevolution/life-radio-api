@@ -11,7 +11,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation } from '@nestjs/swagger';
+import { ApiBody, ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Podcasts } from './entities/podcast.entity';
 import { PodcastsService } from './podcasts.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -21,6 +21,12 @@ import { DeleteResult } from 'typeorm';
 import { UpdatePodcastDto } from './dto/update-podcast.dto';
 
 @Controller('podcasts')
+@ApiHeader({
+  name: 'x-lang',
+  description: 'Internationalisation (Fr, En)',
+  enum: ['fr', 'en'],
+})
+@ApiTags('Podcasts')
 export class PodcastsController {
   constructor(private readonly podcastService: PodcastsService) {}
 
