@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ActualiteCategoryModule } from './actualite-category/actualite-category.module';
 import { PodcastsPlaylistModule } from './podcasts-playlist/podcasts-playlist.module';
 import { PodcastsModule } from './podcasts/podcasts.module';
+import { LiveModule } from './live/live.module';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { PodcastsModule } from './podcasts/podcasts.module';
       synchronize: true,
     }),
     ActualitesModule, 
-    HelperModule, ActualiteCategoryModule, PodcastsPlaylistModule, PodcastsModule],
+    HelperModule, ActualiteCategoryModule, PodcastsPlaylistModule, PodcastsModule, LiveModule],
   controllers: [AppController],
   providers: [AppService],
 })
