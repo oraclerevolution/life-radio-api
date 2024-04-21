@@ -9,6 +9,7 @@ import { ActualiteCategoryModule } from './actualite-category/actualite-category
 import { PodcastsPlaylistModule } from './podcasts-playlist/podcasts-playlist.module';
 import { PodcastsModule } from './podcasts/podcasts.module';
 import { LiveModule } from './live/live.module';
+import { VideosModule } from './videos/videos.module';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { LiveModule } from './live/live.module';
       synchronize: true,
     }),
     ActualitesModule, 
-    HelperModule, ActualiteCategoryModule, PodcastsPlaylistModule, PodcastsModule, LiveModule],
+    HelperModule, ActualiteCategoryModule, PodcastsPlaylistModule, PodcastsModule, LiveModule, VideosModule],
   controllers: [AppController],
   providers: [AppService],
 })
