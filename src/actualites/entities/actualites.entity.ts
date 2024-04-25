@@ -1,7 +1,9 @@
+import { ActualiteCategory } from 'src/actualite-category/entities/actualite-category.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -22,8 +24,8 @@ export class Actualites {
   @Column({ nullable: true })
   image: string;
 
-  @Column()
-  categoryId: string;
+  @ManyToOne(() => ActualiteCategory, (category) => category.id)
+  category: ActualiteCategory;
 
   @CreateDateColumn()
   createdAt: Date;

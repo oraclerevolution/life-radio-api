@@ -12,7 +12,9 @@ export class ActualitesService {
   ) {}
 
   async findAll(): Promise<Actualites[]> {
-    return this.repository.find();
+    return this.repository.find({
+      relations: ['category'],
+    });
   }
 
   async create(
