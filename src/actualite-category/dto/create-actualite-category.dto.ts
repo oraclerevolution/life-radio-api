@@ -1,6 +1,9 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateActualiteCategoryDto {
-    @ApiProperty()
-    name: string
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  color: string;
 }
