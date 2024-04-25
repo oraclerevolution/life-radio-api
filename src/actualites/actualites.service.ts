@@ -1,14 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Actualites } from './entities/actualites.entity';
 import { DeleteResult, Repository } from 'typeorm';
 import { CreateActualitesDto } from './dto/create-actualites.dto';
+import { ActualiteCategoryService } from 'src/actualite-category/actualite-category.service';
 
 @Injectable()
 export class ActualitesService {
   constructor(
     @InjectRepository(Actualites)
     private readonly repository: Repository<Actualites>,
+    private readonly actualitesCategoryService: ActualiteCategoryService,
   ) {}
 
   async findAll(): Promise<Actualites[]> {
@@ -21,9 +23,19 @@ export class ActualitesService {
     payload: CreateActualitesDto,
     file: Express.Multer.File,
   ): Promise<Actualites> {
+    const category = await this.actualitesCategoryService.getOne(
+      payload.categoryId,
+    );
+    if (!category) {
+      throw new BadRequestException("La categorie n'existe pas");
+    }
     const newFilename = `${file.originalname.trim()}`;
-    payload.image = newFilename;
-    return this.repository.save(payload);
+    const actualites = new Actualites();
+    actualites.titre = payload.titre;
+    actualites.category = category;
+    actualites.image = newFilename;
+    actualites.contenu = payload.contenu;
+    return this.repository.save(actualites);
   }
 
   async getOne(id: string): Promise<Actualites> {
