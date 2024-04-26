@@ -8,5 +8,6 @@ import { ReplayPlaylist } from './entities/replay-playlist.entity';
   imports: [TypeOrmModule.forFeature([ReplayPlaylist])],
   controllers: [ReplayPlaylistController],
   providers: [ReplayPlaylistService],
+  exports: [ReplayPlaylistService],
 })
 export class ReplayPlaylistModule {}
