@@ -12,6 +12,8 @@ import { LiveModule } from './live/live.module';
 import { VideosModule } from './videos/videos.module';
 import { ReplayModule } from './replay/replay.module';
 import { ReplayPlaylistModule } from './replay-playlist/replay-playlist.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -20,7 +22,7 @@ import { ReplayPlaylistModule } from './replay-playlist/replay-playlist.module';
       envFilePath: ['.env'],
     }),
     TypeOrmModule.forRoot({
-      type:'postgres',
+      type: 'postgres',
       host: process.env.TYPEORM_HOST,
       port: Number(process.env.TYPEORM_PORT),
       username: process.env.TYPEORM_USERNAME,
@@ -29,8 +31,20 @@ import { ReplayPlaylistModule } from './replay-playlist/replay-playlist.module';
       entities: ['dist/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
-    ActualitesModule, 
-    HelperModule, ActualiteCategoryModule, PodcastsPlaylistModule, PodcastsModule, LiveModule, VideosModule, ReplayModule, ReplayPlaylistModule],
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads',
+    }),
+    ActualitesModule,
+    HelperModule,
+    ActualiteCategoryModule,
+    PodcastsPlaylistModule,
+    PodcastsModule,
+    LiveModule,
+    VideosModule,
+    ReplayModule,
+    ReplayPlaylistModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
