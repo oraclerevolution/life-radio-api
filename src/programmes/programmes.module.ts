@@ -8,10 +8,10 @@ import { MulterModule } from '@nestjs/platform-express';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Programme]),
-    MulterModule.register({ dest: './uploads/programmes' })
+    MulterModule.register({ dest: './uploads/programmes' }),
   ],
   providers: [ProgrammesService],
   controllers: [ProgrammesController],
-  exports: [ProgrammesService]
+  exports: [ProgrammesService],
 })
 export class ProgrammesModule {}

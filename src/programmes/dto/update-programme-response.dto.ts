@@ -1,9 +1,9 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateProgrammeResponseDto {
-    @ApiProperty()
-    raw: []
+  @ApiProperty()
+  raw: [];
 
-    @ApiProperty()
-    affected: number
+  @ApiProperty()
+  affected: number;
 }
