@@ -14,6 +14,7 @@ import { ReplayModule } from './replay/replay.module';
 import { ReplayPlaylistModule } from './replay-playlist/replay-playlist.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ProgrammesModule } from './programmes/programmes.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { join } from 'path';
     VideosModule,
     ReplayModule,
     ReplayPlaylistModule,
+    ProgrammesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
