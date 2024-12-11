@@ -12,7 +12,11 @@ export class LiveService {
   ) {}
 
   findAll(): Promise<LiveUrl[]> {
-    return this.repository.find();
+    return this.repository.find({
+      where: {
+        isActive: true,
+      },
+    });
   }
 
   create(payload: CreateLiveUrlDto): Promise<LiveUrl> {
