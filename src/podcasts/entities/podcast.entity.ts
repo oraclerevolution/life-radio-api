@@ -20,6 +20,9 @@ export class Podcasts {
   @Column()
   image: string;
 
+  @Column({ default: true, nullable: true })
+  status: boolean;
+
   @ManyToOne(() => PodcastsPlaylist, (playlist) => playlist.id)
   playlist: PodcastsPlaylist;
 }

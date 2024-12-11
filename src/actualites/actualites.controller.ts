@@ -3,9 +3,9 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Patch,
   Post,
-  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -82,17 +82,17 @@ export class ActualitesController {
     return this.actualitesService.create(payload, file);
   }
 
-  @Get(':id')
+  @Get('one')
   @ApiOperation({ summary: 'Get an actuality' })
   @ApiOkResponse({
     description: 'The actualities have been successfully retrieved.',
     type: GetActualitesDto,
   })
-  async getOne(@Query('id') id: string): Promise<Actualites> {
+  async getOne(@Param('id') id: string): Promise<Actualites> {
     return this.actualitesService.getOne(id);
   }
 
-  @Patch('update/:id')
+  @Patch('update')
   @ApiOperation({ summary: 'Update an actuality' })
   @ApiBody({ type: UpdateActualityDto })
   @ApiOkResponse({
@@ -100,18 +100,18 @@ export class ActualitesController {
     type: UpdateActualityResponseDto,
   })
   async updateActuality(
-    @Query('id') id: string,
+    @Param('id') id: string,
     @Body() payload: UpdateActualityDto,
   ) {
     return this.actualitesService.updateActuality(id, payload);
   }
 
-  @Patch('delete/:id')
+  @Patch('delete')
   @ApiOperation({ summary: 'Delete an actuality' })
   @ApiOkResponse({
     description: 'The actuality has been successfully deleted.',
   })
-  async deleteActuality(@Query('id') id: string) {
+  async deleteActuality(@Param('id') id: string) {
     return this.actualitesService.deleteActuality(id);
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PodcastsPlaylistService } from 'src/podcasts-playlist/podcasts-playlist.service';
-import { DeleteResult, Repository, UpdateResult } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { Podcasts } from './entities/podcast.entity';
 import { CreatePodcastDto } from './dto/create-podcast.dto';
 import getAudioDurationInSeconds from 'get-audio-duration';
@@ -23,7 +23,7 @@ export class PodcastsService {
    */
   async findAll(id: string): Promise<Podcasts[]> {
     return this.repository.find({
-      where: { playlist: { id: id } },
+      where: { playlist: { id: id }, status: true },
     });
   }
 
@@ -109,7 +109,8 @@ export class PodcastsService {
    * @param {string} id - The identifier of the record to delete.
    * @return {Promise<DeleteResult>} The result of the deletion operation.
    */
-  async delete(id: string): Promise<DeleteResult> {
-    return await this.repository.delete({ id });
+  async delete(id: string): Promise<UpdateResult> {
+    const podcast = await this.getOne(id);
+    return await this.repository.update(podcast.id, { status: false });
   }
 }

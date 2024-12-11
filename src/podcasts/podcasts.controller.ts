@@ -36,7 +36,7 @@ export class PodcastsController {
     return this.podcastService.findAll(id);
   }
 
-  @Get(':id')
+  @Get('one')
   @ApiOperation({ summary: 'Get podcast by id' })
   async getOne(@Param('id') id: string): Promise<Podcasts> {
     return this.podcastService.getOne(id);
@@ -99,7 +99,7 @@ export class PodcastsController {
   @ApiOperation({ summary: 'Update podcast by id' })
   @ApiBody({ type: UpdatePodcastDto })
   async update(
-    @Query('id') id: string,
+    @Param('id') id: string,
     @Body() payload: UpdatePodcastDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
@@ -108,7 +108,7 @@ export class PodcastsController {
 
   @Delete('delete-podcast')
   @ApiOperation({ summary: 'Delete podcast by id' })
-  async delete(@Query('id') id: string): Promise<DeleteResult> {
+  async delete(@Param('id') id: string): Promise<DeleteResult> {
     return await this.podcastService.delete(id);
   }
 }

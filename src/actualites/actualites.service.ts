@@ -66,6 +66,6 @@ export class ActualitesService {
   async deleteActuality(id: string): Promise<UpdateResult> {
     const actualite = await this.getOne(id);
     actualite.status = false;
-    return this.repository.update(id, { status: false });
+    return this.repository.update(actualite.id, { status: false });
   }
 }
