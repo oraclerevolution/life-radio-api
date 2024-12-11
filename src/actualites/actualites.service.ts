@@ -4,6 +4,8 @@ import { Actualites } from './entities/actualites.entity';
 import { DeleteResult, Repository } from 'typeorm';
 import { CreateActualitesDto } from './dto/create-actualites.dto';
 import { ActualiteCategoryService } from 'src/actualite-category/actualite-category.service';
+import { ConfigService } from '@nestjs/config';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class ActualitesService {
@@ -11,6 +13,7 @@ export class ActualitesService {
     @InjectRepository(Actualites)
     private readonly repository: Repository<Actualites>,
     private readonly actualitesCategoryService: ActualiteCategoryService,
+    private readonly configService: ConfigService,
   ) {}
 
   async findAll(): Promise<Actualites[]> {
@@ -29,12 +32,15 @@ export class ActualitesService {
     if (!category) {
       throw new BadRequestException("La categorie n'existe pas");
     }
-    const {} = payload;
-    const newFilename = `${file.originalname.trim()}`;
+
+    // Construire le lien de l'image
+    const baseUrl = this.configService.get<string>('BASE_URL'); // URL de base de l'API
+    const imageUrl = `${baseUrl}/uploads/actualites/${uuidv4()}-${file.originalname.toLowerCase().trim()}`;
+
     const actualites = new Actualites();
     actualites.titre = payload.titre;
     actualites.category = category;
-    actualites.image = newFilename;
+    actualites.image = imageUrl;
     actualites.contenu = payload.contenu;
     return this.repository.save(actualites);
   }
