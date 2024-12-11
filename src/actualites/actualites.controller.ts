@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Delete,
   Get,
   Patch,
   Post,
@@ -23,7 +22,6 @@ import {
 import { CreateActualitesDto } from './dto/create-actualites.dto';
 import { CreateActualityResponseDto } from './dto/create-actuality-response.dto';
 import { UpdateActualityDto } from './dto/update-actuality.dto';
-import { DeleteActualityResponseDto } from './dto/delete-actuality-response.dto';
 import { UpdateActualityResponseDto } from './dto/update-actuality-response.dto';
 import { ActualiteCategoryService } from 'src/actualite-category/actualite-category.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -108,11 +106,10 @@ export class ActualitesController {
     return this.actualitesService.updateActuality(id, payload);
   }
 
-  @Delete('delete/:id')
+  @Patch('delete/:id')
   @ApiOperation({ summary: 'Delete an actuality' })
   @ApiOkResponse({
     description: 'The actuality has been successfully deleted.',
-    type: DeleteActualityResponseDto,
   })
   async deleteActuality(@Query('id') id: string) {
     return this.actualitesService.deleteActuality(id);

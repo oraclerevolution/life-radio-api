@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Actualites } from './entities/actualites.entity';
-import { DeleteResult, Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { CreateActualitesDto } from './dto/create-actualites.dto';
 import { ActualiteCategoryService } from 'src/actualite-category/actualite-category.service';
 import { ConfigService } from '@nestjs/config';
@@ -18,6 +18,9 @@ export class ActualitesService {
 
   async findAll(): Promise<Actualites[]> {
     return this.repository.find({
+      where: {
+        status: true,
+      },
       relations: ['category'],
     });
   }
@@ -60,7 +63,9 @@ export class ActualitesService {
     return this.repository.save({ id, ...payload });
   }
 
-  async deleteActuality(id: string): Promise<DeleteResult> {
-    return await this.repository.delete({ id });
+  async deleteActuality(id: string): Promise<UpdateResult> {
+    const actualite = await this.getOne(id);
+    actualite.status = false;
+    return this.repository.update(id, { status: false });
   }
 }

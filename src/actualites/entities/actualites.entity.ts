@@ -27,6 +27,9 @@ export class Actualites {
   @ManyToOne(() => ActualiteCategory, (category) => category.id)
   category: ActualiteCategory;
 
+  @Column({ default: true, nullable: true })
+  status: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
