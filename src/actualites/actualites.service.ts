@@ -52,6 +52,7 @@ export class ActualitesService {
     return this.repository.findOne({
       where: {
         id,
+        status: true,
       },
     });
   }

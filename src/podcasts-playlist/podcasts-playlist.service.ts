@@ -4,12 +4,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { UpdatePlaylistDto } from './dto/update-playlist.dto';
 import { CreatePlaylistDto } from './dto/create-playlist.dto';
+import { ConfigService } from '@nestjs/config';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class PodcastsPlaylistService {
   constructor(
     @InjectRepository(PodcastsPlaylist)
     private readonly repository: Repository<PodcastsPlaylist>,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -18,7 +21,11 @@ export class PodcastsPlaylistService {
    * @return {Promise<PodcastsPlaylist[]>} The list of all podcasts playlists.
    */
   async findAll(): Promise<PodcastsPlaylist[]> {
-    return this.repository.find();
+    return this.repository.find({
+      where: {
+        status: true,
+      },
+    });
   }
 
   /**
@@ -28,7 +35,7 @@ export class PodcastsPlaylistService {
    * @return {Promise<PodcastsPlaylist>} A promise that resolves to the retrieved podcast playlist.
    */
   async getOne(id: string): Promise<PodcastsPlaylist> {
-    return this.repository.findOne({ where: { id } });
+    return this.repository.findOne({ where: { id, status: true } });
   }
 
   /**
@@ -41,8 +48,10 @@ export class PodcastsPlaylistService {
     payload: CreatePlaylistDto,
     file: Express.Multer.File,
   ): Promise<PodcastsPlaylist> {
-    const newFilename = `${file.originalname.trim()}`;
-    payload.image = newFilename;
+    const baseUrl = this.configService.get<string>('BASE_URL'); // URL de base de l'API
+    const imageUrl = `${baseUrl}/uploads/playlists/${uuidv4()}-${file.originalname.toLowerCase().trim()}`;
+
+    payload.image = imageUrl;
     return this.repository.save(payload);
   }
 
@@ -58,9 +67,10 @@ export class PodcastsPlaylistService {
     payload: UpdatePlaylistDto,
     file: Express.Multer.File,
   ): Promise<PodcastsPlaylist> {
-    const newFilename = `${file.originalname.trim()}`;
     if (payload.image) {
-      payload.image = newFilename;
+      const baseUrl = this.configService.get<string>('BASE_URL'); // URL de base de l'API
+      const imageUrl = `${baseUrl}/uploads/playlists/${uuidv4()}-${file.originalname.toLowerCase().trim()}`;
+      payload.image = imageUrl;
     }
     return this.repository.save({ id, ...payload });
   }
@@ -72,6 +82,7 @@ export class PodcastsPlaylistService {
    * @return {Promise<DeleteResult>} The result of the deletion operation.
    */
   async delete(id: string): Promise<DeleteResult> {
-    return await this.repository.delete({ id });
+    const playlist = await this.getOne(id);
+    return await this.repository.update(playlist.id, { status: false });
   }
 }

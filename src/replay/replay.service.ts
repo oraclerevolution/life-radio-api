@@ -22,7 +22,7 @@ export class ReplayService {
    */
   async findAll(id: string): Promise<Replay[]> {
     return this.repository.find({
-      where: { playlist: { id } },
+      where: { playlist: { id }, status: true },
     });
   }
 
@@ -34,7 +34,7 @@ export class ReplayService {
    */
   async getOne(id: string): Promise<Replay> {
     return await this.repository.findOne({
-      where: { id },
+      where: { id, status: true },
       relations: ['playlist'],
     });
   }
@@ -47,7 +47,7 @@ export class ReplayService {
    */
   async getReplayByPlaylistId(id: string): Promise<Replay> {
     return await this.repository.findOne({
-      where: { playlist: { id } },
+      where: { playlist: { id }, status: true },
     });
   }
 
@@ -66,7 +66,6 @@ export class ReplayService {
     const { titre, playlistId } = payload;
 
     const playlist = await this.replayPlaylistService.getOne(playlistId);
-    console.log('playlist', playlist);
     if (!playlist) {
       throw new NotFoundException('Playlist not found');
     }
@@ -115,6 +114,7 @@ export class ReplayService {
    * @return {Promise<DeleteResult>} The result of the deletion operation.
    */
   async delete(id: string): Promise<DeleteResult> {
-    return await this.repository.delete({ id });
+    const replay = await this.getOne(id);
+    return await this.repository.update(replay.id, { status: false });
   }
 }

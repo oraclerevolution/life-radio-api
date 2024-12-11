@@ -4,6 +4,7 @@ import { PodcastsPlaylistService } from './podcasts-playlist.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PodcastsPlaylist } from './entities/podcasts-playlist.entity';
 import { MulterModule } from '@nestjs/platform-express';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { MulterModule } from '@nestjs/platform-express';
     MulterModule.register({
       dest: './uploads/playlists',
     }),
+    ConfigModule,
   ],
   controllers: [PodcastsPlaylistController],
   providers: [PodcastsPlaylistService],

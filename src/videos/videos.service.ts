@@ -12,7 +12,11 @@ export class VideosService {
   ) {}
 
   findAll(): Promise<Video[]> {
-    return this.repository.find();
+    return this.repository.find({
+      where: {
+        status: true,
+      },
+    });
   }
 
   create(payload: CreateVideoDto): Promise<Video> {
@@ -23,6 +27,7 @@ export class VideosService {
     return this.repository.findOne({
       where: {
         id,
+        status: true,
       },
     });
   }
@@ -32,7 +37,8 @@ export class VideosService {
     return this.getOne(id);
   }
 
-  delete(id: string): Promise<DeleteResult> {
-    return this.repository.delete(id);
+  async delete(id: string): Promise<DeleteResult> {
+    const video = await this.getOne(id);
+    return this.repository.update(video.id, { status: false });
   }
 }

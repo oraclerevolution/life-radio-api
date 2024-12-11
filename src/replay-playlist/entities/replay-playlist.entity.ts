@@ -19,6 +19,9 @@ export class ReplayPlaylist {
   @Column()
   image: string;
 
+  @Column({ default: true, nullable: true })
+  status: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

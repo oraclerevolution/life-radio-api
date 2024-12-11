@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { VideosService } from './videos.service';
 import { CreateVideoDto } from './dto/create-video.dto';
@@ -26,7 +18,7 @@ export class VideosController {
     return this.podcastService.findAll();
   }
 
-  @Get(':id')
+  @Get('one')
   getOne(@Param('id') id: string) {
     return this.podcastService.getOne(id);
   }
@@ -37,13 +29,13 @@ export class VideosController {
     return this.podcastService.create(payload);
   }
 
-  @Patch(':id')
+  @Patch('')
   @ApiOperation({ summary: 'Update Video' })
   async update(@Param('id') id: string, @Body() payload: CreateVideoDto) {
     return this.podcastService.update(id, payload);
   }
 
-  @Delete(':id')
+  @Patch('delete')
   @ApiOperation({ summary: 'Delete Video' })
   async delete(@Param('id') id: string) {
     return this.podcastService.delete(id);

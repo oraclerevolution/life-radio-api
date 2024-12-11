@@ -55,13 +55,13 @@ export class ReplayPlaylistController {
     return this.replayPlaylistService.findAll();
   }
 
-  @Get(':id')
+  @Get('one')
   @ApiOperation({ summary: 'Get a replay playlist by ID' })
   async getOne(@Param('id') id: string): Promise<ReplayPlaylist> {
     return this.replayPlaylistService.getOne(id);
   }
 
-  @Patch(':id')
+  @Patch('')
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -83,7 +83,7 @@ export class ReplayPlaylistController {
     return this.replayPlaylistService.update(id, payload, file);
   }
 
-  @Delete(':id')
+  @Delete('delete')
   @ApiOperation({ summary: 'Delete a replay playlist' })
   async delete(@Param('id') id: string): Promise<DeleteResult> {
     return await this.replayPlaylistService.delete(id);

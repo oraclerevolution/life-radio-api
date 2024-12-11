@@ -34,7 +34,10 @@ export class PodcastsService {
    * @return {Promise<Podcasts>} A promise that resolves to the retrieved podcast with playlist information.
    */
   async getOne(id: string): Promise<Podcasts> {
-    return this.repository.findOne({ where: { id }, relations: ['playlist'] });
+    return this.repository.findOne({
+      where: { id, status: true },
+      relations: ['playlist'],
+    });
   }
 
   /**

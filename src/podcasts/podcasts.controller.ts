@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Patch,
@@ -17,7 +16,6 @@ import { PodcastsService } from './podcasts.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreatePodcastDto } from './dto/create-podcast.dto';
 import { diskStorage } from 'multer';
-import { DeleteResult } from 'typeorm';
 import { UpdatePodcastDto } from './dto/update-podcast.dto';
 
 @Controller('podcasts')
@@ -106,9 +104,9 @@ export class PodcastsController {
     return await this.podcastService.update(id, payload, file);
   }
 
-  @Delete('delete-podcast')
-  @ApiOperation({ summary: 'Delete podcast by id' })
-  async delete(@Param('id') id: string): Promise<DeleteResult> {
-    return await this.podcastService.delete(id);
-  }
+  // @Delete('delete-podcast')
+  // @ApiOperation({ summary: 'Delete podcast by id' })
+  // async delete(@Param('id') id: string): Promise<DeleteResult> {
+  //   return await this.podcastService.delete(id);
+  // }
 }

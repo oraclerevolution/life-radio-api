@@ -20,6 +20,9 @@ export class Replay {
   @Column()
   image: string;
 
+  @Column({ default: true, nullable: true })
+  status: boolean;
+
   @ManyToOne(() => ReplayPlaylist, (playlist) => playlist.id)
   playlist: ReplayPlaylist;
 }

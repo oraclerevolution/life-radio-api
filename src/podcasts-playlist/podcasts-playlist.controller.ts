@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Patch,
@@ -55,13 +54,13 @@ export class PodcastsPlaylistController {
     return this.podcastService.findAll();
   }
 
-  @Get(':id')
+  @Get('one')
   @ApiOperation({ summary: 'Get a podcast playlist by ID' })
   async getOne(@Param('id') id: string): Promise<PodcastsPlaylist> {
     return this.podcastService.getOne(id);
   }
 
-  @Patch(':id')
+  @Patch('')
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -83,7 +82,7 @@ export class PodcastsPlaylistController {
     return this.podcastService.update(id, payload, file);
   }
 
-  @Delete(':id')
+  @Patch('delete')
   @ApiOperation({ summary: 'Delete a podcast playlist' })
   async delete(@Param('id') id: string): Promise<DeleteResult> {
     return await this.podcastService.delete(id);

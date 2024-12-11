@@ -10,6 +10,12 @@ export class Video {
   @Column()
   ytb_url: string;
 
+  @Column({
+    default: true,
+    nullable: true,
+  })
+  status: boolean;
+
   @Column()
   title: string;
 }

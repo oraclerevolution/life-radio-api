@@ -7,7 +7,6 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -32,11 +31,11 @@ export class ReplayController {
 
   @Get('')
   @ApiOperation({ summary: 'Get all replay of a playlist' })
-  async findAll(@Query('id_playlist') id: string): Promise<Replay[]> {
+  async findAll(@Param('id_playlist') id: string): Promise<Replay[]> {
     return this.replayService.findAll(id);
   }
 
-  @Get(':id')
+  @Get('one')
   @ApiOperation({ summary: 'Get replay by id' })
   async getOne(@Param('id') id: string): Promise<Replay> {
     return this.replayService.getOne(id);
@@ -99,7 +98,7 @@ export class ReplayController {
   @ApiOperation({ summary: 'Update replay by id' })
   @ApiBody({ type: UpdateReplayDto })
   async update(
-    @Query('id') id: string,
+    @Param('id') id: string,
     @Body() payload: UpdateReplayDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
@@ -108,7 +107,7 @@ export class ReplayController {
 
   @Delete('delete-replay')
   @ApiOperation({ summary: 'Delete podcast by id' })
-  async delete(@Query('id') id: string): Promise<DeleteResult> {
+  async delete(@Param('id') id: string): Promise<DeleteResult> {
     return await this.replayService.delete(id);
   }
 }
