@@ -9,7 +9,4 @@ export class CreateActualitesDto {
 
   @ApiProperty()
   categoryId: string;
-
-  @ApiProperty()
-  image: string;
 }

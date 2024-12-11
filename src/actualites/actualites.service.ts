@@ -29,6 +29,7 @@ export class ActualitesService {
     if (!category) {
       throw new BadRequestException("La categorie n'existe pas");
     }
+    const {} = payload;
     const newFilename = `${file.originalname.trim()}`;
     const actualites = new Actualites();
     actualites.titre = payload.titre;
