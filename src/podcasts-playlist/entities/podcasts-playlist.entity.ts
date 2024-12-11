@@ -19,7 +19,7 @@ export class PodcastsPlaylist {
   @Column()
   image: string;
 
-  @Column({ name: status, default: true, nullable: true })
+  @Column({ default: true, nullable: true })
   status: boolean;
 
   @CreateDateColumn()
