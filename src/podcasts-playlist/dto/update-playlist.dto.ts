@@ -5,8 +5,4 @@ export class UpdatePlaylistDto {
   @ApiProperty()
   @IsOptional()
   name: string;
-
-  @ApiProperty()
-  @IsOptional()
-  image: string;
 }

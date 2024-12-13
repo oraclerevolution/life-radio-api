@@ -50,9 +50,10 @@ export class PodcastsPlaylistService {
   ): Promise<PodcastsPlaylist> {
     const baseUrl = this.configService.get<string>('BASE_URL'); // URL de base de l'API
     const imageUrl = `${baseUrl}/uploads/playlists/${uuidv4()}-${file.originalname.toLowerCase().trim()}`;
-
-    payload.image = imageUrl;
-    return this.repository.save(payload);
+    const podcast = new PodcastsPlaylist();
+    podcast.name = payload.name;
+    podcast.image = imageUrl;
+    return this.repository.save(podcast);
   }
 
   /**
@@ -67,12 +68,16 @@ export class PodcastsPlaylistService {
     payload: UpdatePlaylistDto,
     file: Express.Multer.File,
   ): Promise<PodcastsPlaylist> {
-    if (payload.image) {
+    const podcast = await this.getOne(id);
+    if (file) {
       const baseUrl = this.configService.get<string>('BASE_URL'); // URL de base de l'API
       const imageUrl = `${baseUrl}/uploads/playlists/${uuidv4()}-${file.originalname.toLowerCase().trim()}`;
-      payload.image = imageUrl;
+      podcast.image = imageUrl;
     }
-    return this.repository.save({ id, ...payload });
+    if (payload.name) {
+      podcast.name = payload.name;
+    }
+    return this.repository.save({ id, podcast });
   }
 
   /**
