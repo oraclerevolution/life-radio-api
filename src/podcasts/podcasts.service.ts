@@ -6,6 +6,8 @@ import { Podcasts } from './entities/podcast.entity';
 import { CreatePodcastDto } from './dto/create-podcast.dto';
 import getAudioDurationInSeconds from 'get-audio-duration';
 import { UpdatePodcastDto } from './dto/update-podcast.dto';
+import { ConfigService } from '@nestjs/config';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class PodcastsService {
@@ -13,6 +15,7 @@ export class PodcastsService {
     @InjectRepository(Podcasts)
     private readonly repository: Repository<Podcasts>,
     private readonly podcastPlaylistService: PodcastsPlaylistService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -24,6 +27,7 @@ export class PodcastsService {
   async findAll(id: string): Promise<Podcasts[]> {
     return this.repository.find({
       where: { playlist: { id: id }, status: true },
+      relations: ['playlist'],
     });
   }
 
@@ -64,10 +68,11 @@ export class PodcastsService {
     const { playlistId, titre } = payload;
 
     const playlist = await this.podcastPlaylistService.getOne(playlistId);
-    console.log('playlist', playlist);
     if (!playlist) {
       throw new NotFoundException('Playlist not found');
     }
+    const baseUrl = this.configService.get<string>('BASE_URL'); // URL de base de l'API
+    const audioUrl = `${baseUrl}/uploads/podcasts/${uuidv4()}-${file.originalname.toLowerCase().trim()}`;
     const duration = await getAudioDurationInSeconds(file.path);
 
     const podcast = new Podcasts();
@@ -75,7 +80,7 @@ export class PodcastsService {
     podcast.titre = titre;
     podcast.image = playlist.image;
     podcast.duration = duration.toString();
-    podcast.audio = file.originalname.trim();
+    podcast.audio = audioUrl;
 
     return this.repository.save(podcast);
   }
