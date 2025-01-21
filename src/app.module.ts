@@ -13,7 +13,6 @@ import { VideosModule } from './videos/videos.module';
 import { ReplayModule } from './replay/replay.module';
 import { ReplayPlaylistModule } from './replay-playlist/replay-playlist.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 import { ProgrammesModule } from './programmes/programmes.module';
 
 @Module({
@@ -24,16 +23,20 @@ import { ProgrammesModule } from './programmes/programmes.module';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'dpg-csqfp28gph6c73ebfs4g-a',
+      host: 'dpg-csqfp28gph6c73ebfs4g-a.oregon-postgres.render.com',
       port: 5432,
       username: 'liferadio_gxtt_user',
       password: 'WAzGrdxYNG27cVWOw0BtsiqJ08HgTTiy',
       database: 'liferadio_gxtt',
       entities: ['dist/**/*.entity{.ts,.js}'],
+      ssl:
+        process.env.NODE_ENV === 'production'
+          ? { rejectUnauthorized: false }
+          : false,
       synchronize: true,
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
+      rootPath: '/opt/render/project/uploads',
       serveRoot: '/uploads',
     }),
     ActualitesModule,

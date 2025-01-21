@@ -10,6 +10,9 @@ export class LiveUrl {
   @Column()
   url: string;
 
+  @Column({ nullable: true })
+  image: string;
+
   @Column({
     default: true,
     name: 'is_active',
