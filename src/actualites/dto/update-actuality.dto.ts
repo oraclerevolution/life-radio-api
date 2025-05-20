@@ -1,20 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
+import { IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class UpdateActualityDto {
   @ApiProperty()
+  @IsString()
   @IsOptional()
-  titre: string;
+  titre?: string;
 
   @ApiProperty()
+  @IsString()
   @IsOptional()
-  contenu: string;
+  contenu?: string;
 
   @ApiProperty()
+  @IsString()
+  @IsUUID()
   @IsOptional()
-  categoryId: string;
-
-  @ApiProperty()
-  @IsOptional()
-  image: string;
+  categoryId?: string;
 }

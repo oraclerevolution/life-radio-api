@@ -8,6 +8,7 @@ import getAudioDurationInSeconds from 'get-audio-duration';
 import { UpdatePodcastDto } from './dto/update-podcast.dto';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
+import { createClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class PodcastsService {
@@ -67,12 +68,46 @@ export class PodcastsService {
   ): Promise<Podcasts> {
     const { playlistId, titre } = payload;
 
+    const supabaseConfig = {
+      SUPABASE_API_KEY: this.configService.get<string>('SUPABASE_API_KEY'),
+      SUPABASE_PROJECT_URL: this.configService.get<string>(
+        'SUPABASE_PROJECT_URL',
+      ),
+      SUPABASE_BUCKET_NAME: this.configService.get<string>(
+        'SUPABASE_BUCKET_NAME',
+      ),
+      BASE_URL_IMAGE: this.configService.get<string>('BASE_URL_IMAGE'),
+    };
+
+    const supabase = createClient(
+      supabaseConfig.SUPABASE_PROJECT_URL,
+      supabaseConfig.SUPABASE_API_KEY,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      },
+    );
+
     const playlist = await this.podcastPlaylistService.getOne(playlistId);
     if (!playlist) {
       throw new NotFoundException('Playlist not found');
     }
-    const baseUrl = this.configService.get<string>('BASE_URL'); // URL de base de l'API
-    const audioUrl = `${baseUrl}/uploads/podcasts/${uuidv4()}-${file.originalname.toLowerCase().trim()}`;
+    const fileName = `podcast-${uuidv4()}.${file.mimetype.split('/').pop()}`;
+    const filePath = `${fileName}`;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { data, error } = await supabase.storage
+      .from(supabaseConfig.SUPABASE_BUCKET_NAME)
+      .upload(filePath, file.buffer, {
+        contentType: file.mimetype,
+      });
+    if (error) {
+      throw error;
+    }
+    const { data: publicUrl } = supabase.storage
+      .from(supabaseConfig.SUPABASE_BUCKET_NAME)
+      .getPublicUrl(fileName);
     const duration = await getAudioDurationInSeconds(file.path);
 
     const podcast = new Podcasts();
@@ -80,7 +115,7 @@ export class PodcastsService {
     podcast.titre = titre;
     podcast.image = playlist.image;
     podcast.duration = duration.toString();
-    podcast.audio = audioUrl;
+    podcast.audio = publicUrl.publicUrl;
 
     return this.repository.save(podcast);
   }
@@ -98,17 +133,66 @@ export class PodcastsService {
     id: string,
     payload: UpdatePodcastDto,
     file: Express.Multer.File,
-  ): Promise<UpdateResult> {
-    const { titre } = payload;
-    const podcast = await this.getOne(id);
-    if (!podcast) {
-      throw new NotFoundException('Podcast not found');
-    }
-    podcast.titre = titre;
-    podcast.audio = file.originalname.trim();
-    podcast.duration = (await getAudioDurationInSeconds(file.path)).toString();
+  ): Promise<Podcasts> {
+    const supabaseConfig = {
+      apiKey: this.configService.get<string>('SUPABASE_API_KEY'),
+      projectUrl: this.configService.get<string>('SUPABASE_PROJECT_URL'),
+      bucketName: this.configService.get<string>('SUPABASE_BUCKET_NAME'),
+      baseUrlImage: this.configService.get<string>('BASE_URL_IMAGE'),
+    };
 
-    return this.repository.update({ id }, podcast);
+    const supabase = createClient(
+      supabaseConfig.projectUrl,
+      supabaseConfig.apiKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      },
+    );
+
+    const existingPodcast = await this.getOne(id);
+    if (!existingPodcast) {
+      throw new NotFoundException("Le podcast n'existe pas");
+    }
+
+    if (
+      payload.playlistId &&
+      payload.playlistId !== existingPodcast.playlist.id
+    ) {
+      const newPlaylist = await this.podcastPlaylistService.getOne(
+        payload.playlistId,
+      );
+      if (!newPlaylist) {
+        throw new NotFoundException("La playlist n'existe pas");
+      }
+      existingPodcast.playlist = newPlaylist;
+    }
+
+    if (file) {
+      const fileName = `podcast-${uuidv4()}.${file.mimetype.split('/').pop()}`;
+      const { error } = await supabase.storage
+        .from(supabaseConfig.bucketName)
+        .upload(fileName, file.buffer, { contentType: file.mimetype });
+      if (error) {
+        throw error;
+      }
+      const { data: publicUrl } = supabase.storage
+        .from(supabaseConfig.bucketName)
+        .getPublicUrl(fileName);
+
+      existingPodcast.audio = publicUrl.publicUrl;
+      existingPodcast.duration = (
+        await getAudioDurationInSeconds(file.path)
+      ).toString();
+    }
+
+    if (payload.titre && payload.titre !== existingPodcast.titre) {
+      existingPodcast.titre = payload.titre;
+    }
+
+    return this.repository.save(existingPodcast);
   }
 
   /**

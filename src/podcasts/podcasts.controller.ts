@@ -15,7 +15,6 @@ import { Podcasts } from './entities/podcast.entity';
 import { PodcastsService } from './podcasts.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreatePodcastDto } from './dto/create-podcast.dto';
-import { diskStorage } from 'multer';
 import { UpdatePodcastDto } from './dto/update-podcast.dto';
 
 @Controller('podcasts')
@@ -44,24 +43,28 @@ export class PodcastsController {
   @ApiOperation({ summary: 'Add a podcast to playlist' })
   @UseInterceptors(
     FileInterceptor('audio', {
-      dest: './uploads/podcasts',
       fileFilter: (req, file, cb) => {
-        if (['audio/mp3', 'audio/mpeg', 'video/mp4'].includes(file.mimetype)) {
+        if (
+          ['audio/mp3', 'audio/mpeg', 'video/mp4'].includes(file.mimetype) &&
+          file.size <= 6000000
+        ) {
           cb(null, true);
-        } else {
+        } else if (
+          !['audio/mp3', 'audio/mpeg', 'video/mp4'].includes(file.mimetype)
+        ) {
           cb(
             new BadRequestException('Only mp3 and mp4 files are allowed'),
             false,
           );
+        } else {
+          cb(
+            new BadRequestException(
+              'File size exceeds the maximum limit of 6MB',
+            ),
+            false,
+          );
         }
       },
-      storage: diskStorage({
-        destination: './uploads/podcasts',
-        filename: (req, file, cb) => {
-          const filename = `${file.originalname.trim()}`;
-          cb(null, filename);
-        },
-      }),
     }),
   )
   async create(
@@ -74,24 +77,28 @@ export class PodcastsController {
   @Patch('update-podcast')
   @UseInterceptors(
     FileInterceptor('audio', {
-      dest: './uploads/podcasts',
       fileFilter: (req, file, cb) => {
-        if (['audio/mp3', 'audio/mpeg', 'video/mp4'].includes(file.mimetype)) {
+        if (
+          ['audio/mp3', 'audio/mpeg', 'video/mp4'].includes(file.mimetype) &&
+          file.size <= 6000000
+        ) {
           cb(null, true);
-        } else {
+        } else if (
+          !['audio/mp3', 'audio/mpeg', 'video/mp4'].includes(file.mimetype)
+        ) {
           cb(
             new BadRequestException('Only mp3 and mp4 files are allowed'),
             false,
           );
+        } else {
+          cb(
+            new BadRequestException(
+              'File size exceeds the maximum limit of 6MB',
+            ),
+            false,
+          );
         }
       },
-      storage: diskStorage({
-        destination: './uploads/podcasts',
-        filename: (req, file, cb) => {
-          const filename = `${file.originalname.trim()}`;
-          cb(null, filename);
-        },
-      }),
     }),
   )
   @ApiOperation({ summary: 'Update podcast by id' })

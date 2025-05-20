@@ -1,8 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class UpdatePodcastDto {
   @ApiProperty()
   @IsString()
-  titre: string;
+  @IsOptional()
+  titre?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  @IsUUID()
+  playlistId?: string;
 }

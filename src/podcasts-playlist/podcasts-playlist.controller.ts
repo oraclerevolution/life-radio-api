@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -11,7 +12,6 @@ import {
 import { PodcastsPlaylistService } from './podcasts-playlist.service';
 import { ApiBody, ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
 import { CreatePlaylistDto } from './dto/create-playlist.dto';
 import { PodcastsPlaylist } from './entities/podcasts-playlist.entity';
 import { UpdatePlaylistDto } from './dto/update-playlist.dto';
@@ -30,13 +30,28 @@ export class PodcastsPlaylistController {
   @Post()
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/playlists',
-        filename: (req, file, cb) => {
-          const newFilename = `${file.originalname.trim()}`;
-          cb(null, newFilename);
-        },
-      }),
+      fileFilter: (req, file, cb) => {
+        if (
+          ['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimetype) &&
+          file.size <= 6000000
+        ) {
+          cb(null, true);
+        } else if (
+          !['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimetype)
+        ) {
+          cb(
+            new BadRequestException('Only jpg, jpeg and png files are allowed'),
+            false,
+          );
+        } else {
+          cb(
+            new BadRequestException(
+              'File size exceeds the maximum limit of 6MB',
+            ),
+            false,
+          );
+        }
+      },
     }),
   )
   @ApiOperation({ summary: 'Create a new podcast playlist' })
@@ -63,13 +78,28 @@ export class PodcastsPlaylistController {
   @Patch('')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/playlists',
-        filename: (req, file, cb) => {
-          const newFilename = `${file.originalname.trim()}`;
-          cb(null, newFilename);
-        },
-      }),
+      fileFilter: (req, file, cb) => {
+        if (
+          ['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimetype) &&
+          file.size <= 6000000
+        ) {
+          cb(null, true);
+        } else if (
+          !['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimetype)
+        ) {
+          cb(
+            new BadRequestException('Only jpg, jpeg and png files are allowed'),
+            false,
+          );
+        } else {
+          cb(
+            new BadRequestException(
+              'File size exceeds the maximum limit of 6MB',
+            ),
+            false,
+          );
+        }
+      },
     }),
   )
   @ApiOperation({ summary: 'Update a podcast playlist' })

@@ -6,12 +6,16 @@ import { ReplayPlaylistService } from 'src/replay-playlist/replay-playlist.servi
 import { CreateReplayDto } from './dto/create-replay.dto';
 import getAudioDurationInSeconds from 'get-audio-duration';
 import { UpdateReplayDto } from './dto/update-replay.dto';
+import { createClient } from '@supabase/supabase-js';
+import { ConfigService } from '@nestjs/config';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class ReplayService {
   constructor(
     @InjectRepository(Replay) private readonly repository: Repository<Replay>,
     private readonly replayPlaylistService: ReplayPlaylistService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -65,10 +69,46 @@ export class ReplayService {
   ): Promise<Replay> {
     const { titre, playlistId } = payload;
 
+    const supabaseConfig = {
+      SUPABASE_API_KEY: this.configService.get<string>('SUPABASE_API_KEY'),
+      SUPABASE_PROJECT_URL: this.configService.get<string>(
+        'SUPABASE_PROJECT_URL',
+      ),
+      SUPABASE_BUCKET_NAME: this.configService.get<string>(
+        'SUPABASE_BUCKET_NAME',
+      ),
+      BASE_URL_IMAGE: this.configService.get<string>('BASE_URL_IMAGE'),
+    };
+
+    const supabase = createClient(
+      supabaseConfig.SUPABASE_PROJECT_URL,
+      supabaseConfig.SUPABASE_API_KEY,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      },
+    );
+
     const playlist = await this.replayPlaylistService.getOne(playlistId);
     if (!playlist) {
       throw new NotFoundException('Playlist not found');
     }
+    const fileName = `replay-${uuidv4()}.${file.mimetype.split('/').pop()}`;
+    const filePath = `${fileName}`;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { data, error } = await supabase.storage
+      .from(supabaseConfig.SUPABASE_BUCKET_NAME)
+      .upload(filePath, file.buffer, {
+        contentType: file.mimetype,
+      });
+    if (error) {
+      throw error;
+    }
+    const { data: publicUrl } = supabase.storage
+      .from(supabaseConfig.SUPABASE_BUCKET_NAME)
+      .getPublicUrl(fileName);
     const duration = await getAudioDurationInSeconds(file.path);
 
     const replay = new Replay();
@@ -76,7 +116,7 @@ export class ReplayService {
     replay.titre = titre;
     replay.image = playlist.image;
     replay.duration = duration.toString();
-    replay.audio = file.originalname.trim();
+    replay.audio = publicUrl.publicUrl;
 
     return this.repository.save(replay);
   }
@@ -93,18 +133,69 @@ export class ReplayService {
   async update(
     id: string,
     payload: UpdateReplayDto,
-    file: Express.Multer.File,
+    file?: Express.Multer.File,
   ) {
-    const { titre } = payload;
-    const replay = await this.getOne(id);
-    if (!replay) {
-      throw new NotFoundException('Replay not found');
-    }
-    replay.titre = titre;
-    replay.audio = file.originalname.trim();
-    replay.duration = (await getAudioDurationInSeconds(file.path)).toString();
+    const supabaseConfig = {
+      apiKey: this.configService.get<string>('SUPABASE_API_KEY'),
+      projectUrl: this.configService.get<string>('SUPABASE_PROJECT_URL'),
+      bucketName: this.configService.get<string>('SUPABASE_BUCKET_NAME'),
+      baseUrlImage: this.configService.get<string>('BASE_URL_IMAGE'),
+    };
 
-    return this.repository.update({ id }, replay);
+    const supabase = createClient(
+      supabaseConfig.projectUrl,
+      supabaseConfig.apiKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      },
+    );
+
+    const existingReplay = await this.getOne(id);
+    if (!existingReplay) {
+      throw new NotFoundException("Le replay n'existe pas");
+    }
+
+    if (
+      payload.playlistId &&
+      payload.playlistId !== existingReplay.playlist.id
+    ) {
+      const newPlaylist = await this.replayPlaylistService.getOne(
+        payload.playlistId,
+      );
+      if (!newPlaylist) {
+        throw new NotFoundException("La playlist n'existe pas");
+      }
+      existingReplay.playlist = newPlaylist;
+    }
+
+    if (file) {
+      const fileName = `replay-${uuidv4()}.${file.mimetype.split('/').pop()}`;
+      const filePath = `${fileName}`;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { data, error } = await supabase.storage
+        .from(supabaseConfig.bucketName)
+        .upload(filePath, file.buffer, {
+          contentType: file.mimetype,
+        });
+      if (error) {
+        throw error;
+      }
+      const { data: publicUrl } = supabase.storage
+        .from(supabaseConfig.bucketName)
+        .getPublicUrl(fileName);
+      const duration = await getAudioDurationInSeconds(file.path);
+      existingReplay.duration = duration.toString();
+      existingReplay.audio = publicUrl.publicUrl;
+    }
+
+    if (payload.titre && payload.titre !== existingReplay.titre) {
+      existingReplay.titre = payload.titre;
+
+      return this.repository.save(existingReplay);
+    }
   }
 
   /**

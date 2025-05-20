@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PodcastsPlaylist } from './entities/podcasts-playlist.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
@@ -6,6 +6,7 @@ import { UpdatePlaylistDto } from './dto/update-playlist.dto';
 import { CreatePlaylistDto } from './dto/create-playlist.dto';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
+import { createClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class PodcastsPlaylistService {
@@ -48,11 +49,42 @@ export class PodcastsPlaylistService {
     payload: CreatePlaylistDto,
     file: Express.Multer.File,
   ): Promise<PodcastsPlaylist> {
-    const baseUrl = this.configService.get<string>('BASE_URL'); // URL de base de l'API
-    const imageUrl = `${baseUrl}/uploads/playlists/${uuidv4()}-${file.originalname.toLowerCase().trim()}`;
+    const supabaseConfig = {
+      apiKey: this.configService.get<string>('SUPABASE_API_KEY'),
+      projectUrl: this.configService.get<string>('SUPABASE_PROJECT_URL'),
+      bucketName: this.configService.get<string>('SUPABASE_BUCKET_NAME'),
+      baseUrlImage: this.configService.get<string>('BASE_URL_IMAGE'),
+    };
+
+    const supabase = createClient(
+      supabaseConfig.projectUrl,
+      supabaseConfig.apiKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      },
+    );
+
+    const fileName = `podcast-playlist-${uuidv4()}.${file.mimetype.split('/').pop()}`;
+    const filePath = `${fileName}`;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { data, error } = await supabase.storage
+      .from(supabaseConfig.bucketName)
+      .upload(filePath, file.buffer, {
+        contentType: file.mimetype,
+      });
+    if (error) {
+      throw error;
+    }
+    const { data: publicUrl } = supabase.storage
+      .from(supabaseConfig.bucketName)
+      .getPublicUrl(fileName);
+
     const podcast = new PodcastsPlaylist();
     podcast.name = payload.name;
-    podcast.image = imageUrl;
+    podcast.image = publicUrl.publicUrl;
     return this.repository.save(podcast);
   }
 
@@ -68,16 +100,52 @@ export class PodcastsPlaylistService {
     payload: UpdatePlaylistDto,
     file: Express.Multer.File,
   ): Promise<PodcastsPlaylist> {
-    const podcast = await this.getOne(id);
+    const supabaseConfig = {
+      apiKey: this.configService.get<string>('SUPABASE_API_KEY'),
+      projectUrl: this.configService.get<string>('SUPABASE_PROJECT_URL'),
+      bucketName: this.configService.get<string>('SUPABASE_BUCKET_NAME'),
+      baseUrlImage: this.configService.get<string>('BASE_URL_IMAGE'),
+    };
+
+    const supabase = createClient(
+      supabaseConfig.projectUrl,
+      supabaseConfig.apiKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      },
+    );
+
+    const existingPodcastPlaylist = await this.getOne(id);
+    if (!existingPodcastPlaylist) {
+      throw new NotFoundException("La playlist n'existe pas");
+    }
+
+    if (payload.name && payload.name !== existingPodcastPlaylist.name) {
+      existingPodcastPlaylist.name = payload.name;
+    }
+
     if (file) {
-      const baseUrl = this.configService.get<string>('BASE_URL'); // URL de base de l'API
-      const imageUrl = `${baseUrl}/uploads/playlists/${uuidv4()}-${file.originalname.toLowerCase().trim()}`;
-      podcast.image = imageUrl;
+      const fileName = `podcast-playlist-${uuidv4()}.${file.mimetype.split('/').pop()}`;
+      const filePath = `${fileName}`;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { data, error } = await supabase.storage
+        .from(supabaseConfig.bucketName)
+        .upload(filePath, file.buffer, {
+          contentType: file.mimetype,
+        });
+      if (error) {
+        throw error;
+      }
+      const { data: publicUrl } = supabase.storage
+        .from(supabaseConfig.bucketName)
+        .getPublicUrl(fileName);
+      existingPodcastPlaylist.image = publicUrl.publicUrl;
     }
-    if (payload.name) {
-      podcast.name = payload.name;
-    }
-    return this.repository.save({ id, podcast });
+
+    return this.repository.save(existingPodcastPlaylist);
   }
 
   /**

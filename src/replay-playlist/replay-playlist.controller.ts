@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -12,7 +13,6 @@ import {
 import { ApiBody, ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ReplayPlaylistService } from './replay-playlist.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
 import { CreateReplayPlaylistDto } from './dto/create-replay-playlist.dto';
 import { ReplayPlaylist } from './entities/replay-playlist.entity';
 import { UpdateReplayPlaylistDto } from './dto/update-replay-playlist.dto';
@@ -31,13 +31,28 @@ export class ReplayPlaylistController {
   @Post()
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/replay/playlists',
-        filename: (req, file, cb) => {
-          const newFilename = `${file.originalname.trim()}`;
-          cb(null, newFilename);
-        },
-      }),
+      fileFilter: (req, file, cb) => {
+        if (
+          ['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimetype) &&
+          file.size <= 6000000
+        ) {
+          cb(null, true);
+        } else if (
+          !['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimetype)
+        ) {
+          cb(
+            new BadRequestException('Only jpg, jpeg and png files are allowed'),
+            false,
+          );
+        } else {
+          cb(
+            new BadRequestException(
+              'File size exceeds the maximum limit of 6MB',
+            ),
+            false,
+          );
+        }
+      },
     }),
   )
   @ApiOperation({ summary: 'Create a new replay playlist' })
@@ -64,13 +79,28 @@ export class ReplayPlaylistController {
   @Patch('')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/replay/playlists',
-        filename: (req, file, cb) => {
-          const newFilename = `${file.originalname.trim()}`;
-          cb(null, newFilename);
-        },
-      }),
+      fileFilter: (req, file, cb) => {
+        if (
+          ['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimetype) &&
+          file.size <= 6000000
+        ) {
+          cb(null, true);
+        } else if (
+          !['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimetype)
+        ) {
+          cb(
+            new BadRequestException('Only jpg, jpeg and png files are allowed'),
+            false,
+          );
+        } else {
+          cb(
+            new BadRequestException(
+              'File size exceeds the maximum limit of 6MB',
+            ),
+            false,
+          );
+        }
+      },
     }),
   )
   @ApiOperation({ summary: 'Update a replay playlist' })

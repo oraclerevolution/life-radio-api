@@ -23,11 +23,11 @@ import { ProgrammesModule } from './programmes/programmes.module';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'dpg-csqfp28gph6c73ebfs4g-a.oregon-postgres.render.com',
-      port: 5432,
-      username: 'liferadio_gxtt_user',
-      password: 'WAzGrdxYNG27cVWOw0BtsiqJ08HgTTiy',
-      database: 'liferadio_gxtt',
+      host: process.env.TYPEORM_HOST,
+      port: Number(process.env.TYPEORM_PORT),
+      username: process.env.TYPEORM_USERNAME,
+      password: process.env.TYPEORM_PASSWORD,
+      database: process.env.TYPEORM_DATABASE,
       entities: ['dist/**/*.entity{.ts,.js}'],
       ssl:
         process.env.NODE_ENV === 'production'

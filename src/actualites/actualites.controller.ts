@@ -26,7 +26,6 @@ import { UpdateActualityResponseDto } from './dto/update-actuality-response.dto'
 import { ActualiteCategoryService } from 'src/actualite-category/actualite-category.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
-import { diskStorage } from 'multer';
 
 @Controller('actualites')
 @ApiHeader({
@@ -54,13 +53,28 @@ export class ActualitesController {
   @Post('create')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/actualites',
-        filename: (req, file, cb) => {
-          const newFilename = `${file.originalname.trim()}`;
-          cb(null, newFilename);
-        },
-      }),
+      fileFilter: (req, file, cb) => {
+        if (
+          ['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimetype) &&
+          file.size <= 6000000
+        ) {
+          cb(null, true);
+        } else if (
+          !['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimetype)
+        ) {
+          cb(
+            new BadRequestException('Only jpg, jpeg and png files are allowed'),
+            false,
+          );
+        } else {
+          cb(
+            new BadRequestException(
+              'File size exceeds the maximum limit of 6MB',
+            ),
+            false,
+          );
+        }
+      },
     }),
   )
   @ApiOperation({ summary: 'Create an actuality' })
@@ -93,6 +107,32 @@ export class ActualitesController {
   }
 
   @Patch('update')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      fileFilter: (req, file, cb) => {
+        if (
+          ['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimetype) &&
+          file.size <= 6000000
+        ) {
+          cb(null, true);
+        } else if (
+          !['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimetype)
+        ) {
+          cb(
+            new BadRequestException('Only jpg, jpeg and png files are allowed'),
+            false,
+          );
+        } else {
+          cb(
+            new BadRequestException(
+              'File size exceeds the maximum limit of 6MB',
+            ),
+            false,
+          );
+        }
+      },
+    }),
+  )
   @ApiOperation({ summary: 'Update an actuality' })
   @ApiBody({ type: UpdateActualityDto })
   @ApiOkResponse({
@@ -102,8 +142,9 @@ export class ActualitesController {
   async updateActuality(
     @Param('id') id: string,
     @Body() payload: UpdateActualityDto,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.actualitesService.updateActuality(id, payload);
+    return this.actualitesService.updateActuality(id, payload, file);
   }
 
   @Patch('delete')

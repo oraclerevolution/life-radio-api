@@ -14,7 +14,6 @@ import { ApiBody, ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ReplayService } from './replay.service';
 import { Replay } from './entities/replay.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
 import { CreateReplayDto } from './dto/create-replay.dto';
 import { UpdateReplayDto } from './dto/update-replay.dto';
 import { DeleteResult } from 'typeorm';
@@ -45,24 +44,28 @@ export class ReplayController {
   @ApiOperation({ summary: 'Add a replay to a playlist' })
   @UseInterceptors(
     FileInterceptor('audio', {
-      dest: './uploads/replay/replay',
       fileFilter: (req, file, cb) => {
-        if (['audio/mp3', 'audio/mpeg', 'video/mp4'].includes(file.mimetype)) {
+        if (
+          ['audio/mp3', 'audio/mpeg', 'video/mp4'].includes(file.mimetype) &&
+          file.size <= 6000000
+        ) {
           cb(null, true);
-        } else {
+        } else if (
+          !['audio/mp3', 'audio/mpeg', 'video/mp4'].includes(file.mimetype)
+        ) {
           cb(
             new BadRequestException('Only mp3 and mp4 files are allowed'),
             false,
           );
+        } else {
+          cb(
+            new BadRequestException(
+              'File size exceeds the maximum limit of 6MB',
+            ),
+            false,
+          );
         }
       },
-      storage: diskStorage({
-        destination: './uploads/replay/replay',
-        filename: (req, file, cb) => {
-          const filename = `${file.originalname.trim()}`;
-          cb(null, filename);
-        },
-      }),
     }),
   )
   async create(
@@ -75,24 +78,28 @@ export class ReplayController {
   @Patch('update-replay')
   @UseInterceptors(
     FileInterceptor('audio', {
-      dest: './uploads/replay/replay',
       fileFilter: (req, file, cb) => {
-        if (['audio/mp3', 'audio/mpeg', 'video/mp4'].includes(file.mimetype)) {
+        if (
+          ['audio/mp3', 'audio/mpeg', 'video/mp4'].includes(file.mimetype) &&
+          file.size <= 6000000
+        ) {
           cb(null, true);
-        } else {
+        } else if (
+          !['audio/mp3', 'audio/mpeg', 'video/mp4'].includes(file.mimetype)
+        ) {
           cb(
             new BadRequestException('Only mp3 and mp4 files are allowed'),
             false,
           );
+        } else {
+          cb(
+            new BadRequestException(
+              'File size exceeds the maximum limit of 6MB',
+            ),
+            false,
+          );
         }
       },
-      storage: diskStorage({
-        destination: './uploads/replay/replay',
-        filename: (req, file, cb) => {
-          const filename = `${file.originalname.trim()}`;
-          cb(null, filename);
-        },
-      }),
     }),
   )
   @ApiOperation({ summary: 'Update replay by id' })
