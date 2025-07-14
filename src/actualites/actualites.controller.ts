@@ -58,19 +58,17 @@ export class ActualitesController {
           ['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimetype) &&
           file.size <= 6000000
         ) {
-          cb(null, true);
+          cb(
+            new BadRequestException(
+              'File size exceeds the maximum limit of 6MB',
+            ),
+            false,
+          );
         } else if (
           !['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimetype)
         ) {
           cb(
             new BadRequestException('Only jpg, jpeg and png files are allowed'),
-            false,
-          );
-        } else {
-          cb(
-            new BadRequestException(
-              'File size exceeds the maximum limit of 6MB',
-            ),
             false,
           );
         }
@@ -114,19 +112,17 @@ export class ActualitesController {
           ['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimetype) &&
           file.size <= 6000000
         ) {
-          cb(null, true);
+          cb(
+            new BadRequestException(
+              'File size exceeds the maximum limit of 6MB',
+            ),
+            true,
+          );
         } else if (
           !['image/jpg', 'image/jpeg', 'image/png'].includes(file.mimetype)
         ) {
           cb(
             new BadRequestException('Only jpg, jpeg and png files are allowed'),
-            false,
-          );
-        } else {
-          cb(
-            new BadRequestException(
-              'File size exceeds the maximum limit of 6MB',
-            ),
             false,
           );
         }
